@@ -1,5 +1,5 @@
 # SARS-CoV-2-seroprevalence-CCREOH
-# Code for statistical analyses. Used for:
+Code for statistical analyses. Used for:
 ## Map with districts of residence
 ## Descriptives
 ## Comparison of demographic variables by recruitment region 
