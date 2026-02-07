@@ -9,4 +9,4 @@ assess interaction effects,
 Likelihood ratio test,
 final model accuracy and validation, and
 predictor correlations.
-The data presented in this study are available on request from the corresponding authors (delmalizbarreto@gmail.com and mlichtve@pitt.edu) with prior consultation with the Office of Sponsored Programs of the University of Pittsburgh.
+The data is available on request from the corresponding authors (delmalizbarreto@gmail.com and mlichtve@pitt.edu) with prior consultation with the Office of Sponsored Programs of the University of Pittsburgh.
