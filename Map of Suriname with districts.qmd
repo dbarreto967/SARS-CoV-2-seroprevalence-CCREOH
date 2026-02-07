@@ -1,0 +1,133 @@
+---
+title: "Delmaliz map"
+format: html
+editor: visual
+---
+
+# Import Libraries
+
+```{r}
+# use install.packages() if any of these packages aren't installed
+
+library(geodata)
+library(sf)
+library(tidyverse)
+library(ggspatial)
+library(RColorBrewer)
+library(rnaturalearth)
+library(grid)
+
+```
+
+# Load Suriname districts
+
+```{r}
+
+# this function downloads the shapefile for Suriname at the first administrative level (districts)
+suriname_adm1 <- geodata::gadm("SUR", level = 1, path = tempdir())
+
+# this converts the data to an sf object for use with ggplot2
+suriname_adm1_sf <- st_as_sf(suriname_adm1)
+
+```
+
+# Separate selected vs non-selected districts
+
+```{r}
+
+# select the districts you want to highlight
+selected_districts <- c("Paramaribo", "Wanica", "Saramacca", "Para", "Commewijne", "Nickerie", "Coronie")
+
+# filter the map data for selected districts
+suriname_selected <- suriname_adm1_sf %>%
+  filter(NAME_1 %in% selected_districts)
+
+# filter the map data for non-selected districts -- this is to do outlines of surrounding regions in the plot
+suriname_other <- suriname_adm1_sf %>%
+  filter(!NAME_1 %in% selected_districts)
+
+```
+
+```{r}
+
+library(rnaturalearthdata)
+
+# Get all countries
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Filter for South America
+south_america <- world %>% filter(continent == "South America")
+
+# Separate Suriname
+suriname <- south_america %>% filter(admin == "Suriname")
+
+
+```
+
+# Create the Map
+
+```{r}
+
+# Plot: South America in gray, Suriname highlighted
+inset <- ggplot() +
+  geom_sf(data = south_america, fill = "gray90", color = "white") +
+  geom_sf(data = suriname, fill = "red", color = "black", linewidth = 0.8) +
+  theme_minimal() +
+  coord_sf(xlim = c(-80, -35), ylim = c(-55, 15)) + 
+    theme(
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8), # black box
+    axis.ticks = element_blank(),      # remove tick marks
+    axis.text = element_blank(),       # remove tick labels
+    axis.title = element_blank()       # remove axis titles
+  )
+
+
+
+# Calculate bounding box of selected districts (basically how big you want the map to be)
+bbox <- st_bbox(suriname_selected)
+
+# Expand the bbox by 20% in each direction, you only need to change expand_factor if you want it larger or smaller
+expand_factor <- 0.5
+xrange <- bbox["xmax"] - bbox["xmin"]
+yrange <- bbox["ymax"] - bbox["ymin"]
+
+bbox_expanded <- bbox
+bbox_expanded["xmin"] <- bbox["xmin"] - expand_factor * xrange
+bbox_expanded["xmax"] <- bbox["xmax"] + expand_factor * xrange
+bbox_expanded["ymin"] <- bbox["ymin"] - expand_factor * yrange
+bbox_expanded["ymax"] <- bbox["ymax"] + expand_factor * yrange
+
+# initiate the ggplot
+sur_plot <- ggplot() +
+  # Background districts in gray
+  geom_sf(data = suriname_other, fill = "white", color = "gray40", size = 0.4) +
+  # Selected districts in color
+  geom_sf(data = suriname_selected, aes(fill = NAME_1), color = "black", size = 0.6) +
+  # set the colors of selected regions
+  scale_fill_brewer(palette = "Set2", name = "Districts of residence, Suriname") +
+# set the size of the map 
+coord_sf(
+  xlim = c(bbox_expanded["xmin"], bbox_expanded["xmax"]),
+  ylim = c(bbox_expanded["ymin"], bbox_expanded["ymax"]),
+  expand = FALSE
+) +
+  # make theme as minimal as possible
+  theme_void() +
+  # set title
+  ggtitle("") +
+  # set font size of title and legend position
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14),
+    legend.position = "bottom"
+  )
+
+
+sur_plot
+# Combining both maps
+print(inset, vp = viewport(x = .1, y = 0.75, width = 0.4, height = 0.4))
+
+
+```
+
+```         
+```
